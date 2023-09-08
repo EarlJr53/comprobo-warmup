@@ -1,7 +1,6 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-from threading import Thread, Event
 from time import sleep
 import tty
 import select
@@ -13,8 +12,6 @@ class TeleopNode(Node):
     def __init__(self):
         super().__init__("teleop_node")
         self.vel_pub = self.create_publisher(Twist, "cmd_vel", 10)
-        # self.run_loop_thread = Thread(target=self.run_loop)
-        # self.run_loop_thread.start()
         self.run_loop()
 
     def drive(self, linear, angular):
@@ -34,20 +31,20 @@ class TeleopNode(Node):
             key = getKey()
             if key == "w":
                 self.drive(linear=0.3, angular=0.0)
-                sleep(1)
-                self.drive(linear=0.0, angular=0.0)
+                # sleep(1)
+                # self.drive(linear=0.0, angular=0.0)
             elif key == "s":
                 self.drive(linear=-0.3, angular=0.0)
-                sleep(1)
-                self.drive(linear=0.0, angular=0.0)
+                # sleep(1)
+                # self.drive(linear=0.0, angular=0.0)
             elif key == "a":
                 self.drive(linear=0.0, angular=0.5)
-                sleep(1)
-                self.drive(linear=0.0, angular=0.0)
+                # sleep(1)
+                # self.drive(linear=0.0, angular=0.0)
             elif key == "d":
                 self.drive(linear=0.0, angular=-0.5)
-                sleep(1)
-                self.drive(linear=0.0, angular=0.0)
+                # sleep(1)
+                # self.drive(linear=0.0, angular=0.0)
             else:
                 self.drive(linear=0.0, angular=0.0)
             print(key)
