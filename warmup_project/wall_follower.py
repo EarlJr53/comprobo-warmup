@@ -24,7 +24,6 @@ class WallFollowerNode(Node):
         self.distance_deadband = 0.15
         self.shortest_distance = 5.0
         self.Kp = 0.05
-        self.Enable = False
 
     def handle_scan(self, scan):
         if scan.ranges[270] != 0.0:
@@ -43,29 +42,29 @@ class WallFollowerNode(Node):
         if self.shortest_distance > (self.target_distance + self.distance_deadband):
             print("too far")
             # too far from wall
-            if 10.0 < ang_dif < 20.0:
+            if 10.0 <= ang_dif <= 20.0:
                 msg.angular.z = 0.0
-            elif ang_dif < 15.0:
+            elif ang_dif < 10.0:
                 msg.angular.z = -0.2
-            elif ang_dif > 15.0:
+            elif ang_dif > 20.0:
                 msg.angular.z = 0.2
         elif self.shortest_distance < (self.target_distance - self.distance_deadband):
             print("too close")
             # too close to wall
-            if -10.0 > ang_dif > -20.0:
+            if -10.0 >= ang_dif >= -20.0:
                 msg.angular.z = 0.0
-            elif ang_dif > -15.0:
+            elif ang_dif > -10.0:
                 msg.angular.z = 0.2
-            elif ang_dif < -15.0:
+            elif ang_dif < -20.0:
                 msg.angular.z = -0.2
         else:
             print("right distance")
             # at target distance from wall
-            if -1 < ang_dif < 1:
+            if -1.0 <= ang_dif <= 1.0:
                 msg.angular.z = 0.0
-            elif ang_dif > 0.5:
+            elif ang_dif > 1.0:
                 msg.angular.z = 0.2
-            elif ang_dif < -0.5:
+            elif ang_dif < -1.0:
                 msg.angular.z = -0.2
 
         self.vel_pub.publish(msg)
