@@ -20,7 +20,7 @@ class WallFollowerNode(Node):
             qos_profile=qos_profile_sensor_data,
         )
         self.shortest_angle = 0.0
-        self.target_distance = 1.0
+        self.target_distance = 0.5
         self.distance_deadband = 0.15
         self.shortest_distance = 5.0
         self.Kp = 0.05
@@ -29,7 +29,7 @@ class WallFollowerNode(Node):
         if scan.ranges[270] != 0.0:
             self.shortest_distance = 5.0
             for i, dist in enumerate(scan.ranges):
-                if dist <= self.shortest_distance:
+                if (dist <= self.shortest_distance) and (dist != 0.0):
                     self.shortest_distance = dist
                     self.shortest_angle = i
                     print(f"{dist}, {i}")
@@ -38,7 +38,7 @@ class WallFollowerNode(Node):
         msg = Twist()
 
         ang_dif = self.shortest_angle - 270.0
-        msg.linear.x = 0.2
+        msg.linear.x = 0.1
         if self.shortest_distance > (self.target_distance + self.distance_deadband):
             print("too far")
             # too far from wall
