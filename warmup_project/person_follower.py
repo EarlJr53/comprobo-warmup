@@ -20,7 +20,7 @@ class PersonFollowerNode(Node):
         self.feet_dist = []
         self.centroid_ang = 0.0
         self.centroid_dist = 0.0
-        self.target_distance = 0.5
+        self.target_distance = 1.0
         self.distance_deadband = 0.15
 
     def handle_scan(self, scan):
@@ -29,8 +29,8 @@ class PersonFollowerNode(Node):
             temp_dist = []
             self.feet_dist = []
             self.feet_ang = []
-            modscan = scan.ranges[180:] + scan.ranges[:180]
-            for i, dist in enumerate(modscan):
+            modscan = scan.ranges[180:] + scan.ranges[:60]
+            for i, dist in enumerate(modscan, 120):
                 if dist != 0.0 and dist <= 2.0:
                     temp_angles.append(i)
                     temp_dist.append(dist)
@@ -40,11 +40,16 @@ class PersonFollowerNode(Node):
                     temp_dist = []
             if self.feet_ang:
                 self.calc_centroid()
+            else:
+                self.centroid_ang = 0.0
+                self.centroid_dist = 0.0
 
     def run_loop(self):
         msg = Twist()
 
         ang_dif = self.centroid_ang - 180
+
+        print(f"{self.centroid_dist}, {ang_dif}")
 
         if self.centroid_dist > (self.target_distance + self.distance_deadband):
             print("too far")
@@ -59,11 +64,11 @@ class PersonFollowerNode(Node):
         if ang_dif > 7:
             print("turn left")
             # too far right, turn left
-            msg.angular.z = 0.2
+            msg.angular.z = 0.3
         elif ang_dif < -7:
             print("turn right")
             # too far left, turn right
-            msg.angular.z = -0.2
+            msg.angular.z = -0.3
         else:
             msg.angular.z = 0.0
 
@@ -74,6 +79,7 @@ class PersonFollowerNode(Node):
         self.feet_ang.append(sum(angles) / len(angles))
 
     def calc_centroid(self):
+        # if 90 < (sum(self.feet_ang) / len(self.feet_ang)) < 270:
         self.centroid_ang = sum(self.feet_ang) / len(self.feet_ang)
         self.centroid_dist = sum(self.feet_dist) / len(self.feet_dist)
 
