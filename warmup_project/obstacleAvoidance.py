@@ -15,91 +15,86 @@ class ObstacleAvoidance(Node):
         self.vel_pub = self.create_publisher(Twist, "cmd_vel", 10)
         self.marker_pub = self.create_publisher(Marker, 'visualization_marker', 10) #for publishing marker at person location
         self.scan_sub = self.create_subscription(LaserScan, "scan", self.process_scan, qos_profile=qos_profile_sensor_data)
+
+        self.flag = False
         
     def process_scan(self, scan):
-        #print(list(scan.ranges[0:10]))
         #scan in front of the Neato 
         neatoPathScanLeft = list(scan.ranges[0:10])
         neatoPathScanRight= list(scan.ranges[350:360])
-        generalLeftScan = list(scan.ranges[10:90])
-        generalRightScan = list(scan.ranges[270:350])
+        generalLeftScan = list(scan.ranges[10:70])
+        generalRightScan = list(scan.ranges[290:350])
         neatoFullScan = generalLeftScan + neatoPathScanLeft + neatoPathScanRight +generalRightScan
         straightAhead = scan.ranges[0]
-        #print(neatoPathScanRight)
-        print("StraightAhead is: ", straightAhead)
-        if straightAhead <= 0.5 and straightAhead != 0.0:
-            self.turnUntilClear(straightAhead)
+        #print("StraightAhead is: ", straightAhead)
 
+        if (straightAhead <= 0.5 and straightAhead != 0.0) or (self.flag == True):
+            self.turnUntilClear(straightAhead, generalLeftScan,generalRightScan)
+            self.flag = False
         else: # straightAhead > 0.5 or straightAhead == 0.0:
             self.choosePath(neatoPathScanLeft, neatoPathScanRight, generalLeftScan,generalRightScan)
 
     def choosePath(self, neatoPathScanLeft, neatoPathScanRight, generalLeftScan, generalRightScan):
-        # print("leftObstacleCoefficient is: ", leftObstacleCoefficient)
-        # print("rightObstacleCoefficient is: ", rightObstacleCoefficient)
         msg = Twist()
         
-        # #choose an angular z velocity and linear velocity
-        # if leftObstacleCoefficient >= 70 or rightObstacleCoefficient >= 70:
-        #     z_value = 0.3
-        #     x_value = -0.3
-        #     sleep_time = 0.5
-        # elif (abs(leftObstacleCoefficient - rightObstacleCoefficient) <=15) and max(leftObstacleCoefficient, rightObstacleCoefficient) >60:
-        #     z_value = 0.3
-        #     x_value = 0.0
-        #     sleep_time = 0.5
-        # else:
-        #     z_value = ((leftObstacleCoefficient - rightObstacleCoefficient)/100)*0.3
-        #     x_value = (((leftObstacleCoefficient + rightObstacleCoefficient)/2)/100)*0.3 + 0.01
-        #     sleep_time = 0.1
-
-        #choose an angular z velocity and linear velocity
-        print("minimum of left: ", min(neatoPathScanLeft))
-        print("minimum of right: ", min(neatoPathScanRight))
+        #choose z angular velocity
+        if ((min(generalLeftScan) < 0.7 and min(generalLeftScan) != 0.0) or ((min(generalRightScan) < 0.7) and min(generalRightScan) != 0.0)):
+            if min(generalLeftScan) < min(generalRightScan):
+                print("turning right")
+                z_value = -(min(generalLeftScan)/0.7)*0.3 +0.05
+            else:
+                print("turning left")
+                z_value = (min(generalRightScan)/0.7)*0.3 + 0.05
+        else:
+            z_value = 0.0        
         
-        
+        #choose x linear velocity
         if ((min(neatoPathScanLeft)>0.5 and min(neatoPathScanRight)>0.5) or (min(neatoPathScanLeft) == 0.0 or min(neatoPathScanRight) == 0.0)):
             x_value = 0.2
-            z_value = 0.0
-            sleep_time = 0.5
+            sleep_time = 0.1
         elif min(neatoPathScanLeft)>0.3 and min(neatoPathScanRight)>0.3:
-            x_value = ((min(min(neatoPathScanLeft), min(neatoPathScanRight))-0.3)/0.2)*0.2 + 0.01
-            print("x_value check", x_value)
-            sleep_time = 0.2
-            if min(neatoPathScanLeft) < min(neatoPathScanRight):
-                z_value = 0.2
-            else:
-                z_value = -0.2
+            x_value = ((min(min(neatoPathScanLeft), min(neatoPathScanRight))-0.3)/0.2)*0.15 + 0.01
+            sleep_time = 0.1
         else:
+            print("whoa, backing up")
             sleep_time = 0.2
-            z_value = 0.0
+            z_value = 0.0 #override prev. z_value if something is in the way
             x_value = -0.05
-        
-        print("z_value is:", z_value)
-        print("x_value is:", x_value)
+            self.flag = True
+
+        #also check if there is something very close in periphery: if so, override prev values and back up
+        if ((min(generalLeftScan) < 0.25 and min(generalLeftScan) != 0.0) or ((min(generalRightScan) < 0.25) and min(generalRightScan) != 0.0)):
+            print("whoa, backing up")
+            sleep_time = 0.2
+            z_value = 0.0 #override prev. z_value if something is in the way
+            x_value = -0.05
+            self.flag = True
+
         msg.angular.z = z_value
         msg.linear.x = x_value
         self.vel_pub.publish(msg)
-        time.sleep(sleep_time) #this may cause issues?
+        time.sleep(sleep_time) 
     
-    def turnUntilClear(self, straightAhead):
+    def turnUntilClear(self, straightAhead, generalLeftScan, generalRightScan):
         msg = Twist()
         msg.angular.z = 0.0
         msg.linear.x = -0.2
         self.vel_pub.publish(msg)
         print("moving backward")
-        time.sleep(2)
+        time.sleep(1.5)
         
-        msg.angular.z = 0.3   #can decide which way to turn based on periphery later
+        if min(generalLeftScan) < min(generalRightScan):
+            print("turning right until clear")
+            msg.angular.z = -0.3
+        else:
+            print("turning left until clear")
+            msg.angular.z = 0.3
         msg.linear.x = 0.0
         self.vel_pub.publish(msg)
-        time.sleep(3)
-
-        #function that turns right or left until path is clear
+        time.sleep(3) #consider making this pause very short/ so continuously updating
     
     def run_loop(self):
         msg = Twist()
-        #publish marker at location of person in rviz2 (untested)
-        #self.publish_marker()
 
 def main(args=None):
     rclpy.init(args=args)
@@ -110,33 +105,3 @@ def main(args=None):
 
 if __name__ == "__main__":
     main()
-
-
-
-        #coefficients representing severity (closeness and density) of obstacles on right and left
-        # leftObstacleCoefficient = 0 #range 0~100 unless obstacle is within 0.2m, in which case it goes above 100
-        # rightObstacleCoefficient = 0 #range 0~100
-
-        # for point in neatoPathScanLeft:
-        #     if point < 2.0:
-        #         if point < 0.2:
-        #             leftObstacleCoefficient += 30
-        #         elif point < 0.5:
-        #             leftObstacleCoefficient += 10
-        #         else:
-        #             leftObstacleCoefficient += 3
-        
-        # for point in neatoPathScanRight:
-        #     #print(point)
-        #     if point < 2.0:
-        #         if point < 0.2:
-        #             rightObstacleCoefficient += 30
-        #         elif point < 0.5:
-        #             rightObstacleCoefficient += 10
-        #         else:
-        #             rightObstacleCoefficient += 3
-        
-        # #print("leftObstacleCoefficient:", leftObstacleCoefficient)
-        # #print("rightObstacleCoefficient:", rightObstacleCoefficient)
-        
-        # self.choosePath(leftObstacleCoefficient, rightObstacleCoefficient)
