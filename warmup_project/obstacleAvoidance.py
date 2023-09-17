@@ -7,6 +7,10 @@ from sensor_msgs.msg import LaserScan
 from visualization_msgs.msg import Marker
 import math
 import time
+from numpy import inf
+import pandas as pd
+import numpy as np
+
 
 class ObstacleAvoidance(Node):
     def __init__(self):
@@ -17,15 +21,39 @@ class ObstacleAvoidance(Node):
         self.scan_sub = self.create_subscription(LaserScan, "scan", self.process_scan, qos_profile=qos_profile_sensor_data)
 
         self.flag = False
-        
+        #note: can add bump to detect something youve run tino thats too close for the lidar
     def process_scan(self, scan):
         #scan in front of the Neato 
+        #print("updating scan")
         neatoPathScanLeft = list(scan.ranges[0:10])
         neatoPathScanRight= list(scan.ranges[350:360])
-        generalLeftScan = list(scan.ranges[10:70])
-        generalRightScan = list(scan.ranges[290:350])
+        generalLeftScan = list(scan.ranges[10:80])
+        generalRightScan = list(scan.ranges[250:350])
+
+        #for physical neatos, remove zeroes to prevent issues with min() later on
+        if max(neatoPathScanLeft) == 0.0:
+            neatoPathScanLeft = [100]
+        else:
+            neatoPathScanLeft = [i for i in neatoPathScanLeft if i != 0.0]
+
+        if max(neatoPathScanRight) == 0.0:
+            neatoPathScanRight = [100]
+        else: 
+            neatoPathScanRight = [i for i in neatoPathScanRight if i != 0.0]
+        
+        if max(generalLeftScan) == 0.0:
+            generalLeftScan = [100]
+        else: 
+            generalLeftScan = [i for i in generalLeftScan if i != 0.0]
+
+        if max(generalRightScan) == 0.0:
+            generalRightScan = [100]
+        else: 
+            generalRightScan = [i for i in generalRightScan if i != 0.0]
+  
         neatoFullScan = generalLeftScan + neatoPathScanLeft + neatoPathScanRight +generalRightScan
         straightAhead = scan.ranges[0]
+        #print("neatoPathLeft is: ", X)
         #print("StraightAhead is: ", straightAhead)
 
         if (straightAhead <= 0.5 and straightAhead != 0.0) or (self.flag == True):
@@ -49,7 +77,11 @@ class ObstacleAvoidance(Node):
             z_value = 0.0        
         
         #choose x linear velocity
-        if ((min(neatoPathScanLeft)>0.5 and min(neatoPathScanRight)>0.5) or (min(neatoPathScanLeft) == 0.0 or min(neatoPathScanRight) == 0.0)):
+        # print("minimum on left front is: ", min(neatoPathScanLeft))
+        # print("minimum on right front is: ", min(neatoPathScanRight))
+        # print("minimum on left side is: ", min(generalLeftScan))
+        # print("minimum on right side is: ", min(generalRightScan))
+        if ((min(neatoPathScanLeft)>0.5 or min(neatoPathScanLeft) == 0.0)) and ((min(neatoPathScanRight)>0.5) or min(neatoPathScanRight) == 0.0):
             x_value = 0.2
             sleep_time = 0.1
         elif min(neatoPathScanLeft)>0.3 and min(neatoPathScanRight)>0.3:
