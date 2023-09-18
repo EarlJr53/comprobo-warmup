@@ -54,6 +54,20 @@ We didn't have any major issues with this exercise, although the the delay-based
 
 ### Wall Following
 
+There were two primary components to the control goals of the wall following exercise. First, we wanted the robot to remain oriented parallel to the wall. Second, we wanted the robot to remain a prescribed distance away from the wall. For this exercise, we used the Neato's LiDAR scan data to keep track of its position and orientation relative to the wall. With each set of LiDAR scan data, we determined which data point held the shortest distance measurement. This told us where the robot was facing relative to the wall, as the shortest distance from the robot to the wall would make up a line perpendicular to the wall, telling us how many degrees the Neato is from parallel to the wall. We could also use this same shortest distance measurement to determine whether we were near our target distance or needed to move closer or further from the wall.
+
+#### Code Structure
+
+After the `handle_scan()` method processes the incoming scan and determines the shortest measurement, most of the logic for this exercise happens in the `run_loop()` method. First, we calculate the difference between the angle of the shortest measurement and what this angle would be if we were parallel to the wall, giving an angle representing the divergence from a parallel path.
+
+Next, we check whether we are too far, too close, or the right distance from the wall. If we are too close, we turn the Neato away from the wall. If too far, we turn the Neato toward the wall. If we are around the right distance, we turn the Neato back to parallel. Because the Neato's linear velocity is constant in this implementation, all we have to adjust is the angular velocity to get it to reliably follow the wall.
+
+#### Issues
+
+Before making the linear velocity constant, when the Neato would stray slightly off of its intended trajectory, it would fully stop and try to realign itself. This made forward progress very slow. We solved this by making the forward velocity constant, allowing the angular adjustments to happen while the Neato continued making forward progress!
+
+If we wanted to expand this further, we could add a bump sensor-based stop, allowing the robot to actually stop. We could also implement a more complex method of setting the forward velocity rather than just setting it once and forgetting it.
+
 ### Person Following
 
 ### Obstacle Avoidance
@@ -74,6 +88,6 @@ These functions run in a constantly updating loop.
 
 ## Takeaways:
 
- - Visualizations and concept maps are essential to robotics programming. This can be done through print statements, pseudocode and state diagrams, rviz, Gazebo. A simple mistake in your thinking will be much easier to see live than in lines of code.
+-   Visualizations and concept maps are essential to robotics programming. This can be done through print statements, pseudocode and state diagrams, rviz, Gazebo. A simple mistake in your thinking will be much easier to see live than in lines of code.
 
- - Sometimes simpler is better. For obstacle avoidance, we could have used RANSAC or other line fitting algorithms and created potential maps - it turns out a simpler algorthim worked just as well and took much less time to implement and troubleshoot.
+-   Sometimes simpler is better. For obstacle avoidance, we could have used RANSAC or other line fitting algorithms and created potential maps - it turns out a simpler algorthim worked just as well and took much less time to implement and troubleshoot.
