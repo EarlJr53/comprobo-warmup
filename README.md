@@ -70,6 +70,18 @@ If we wanted to expand this further, we could add a bump sensor-based stop, allo
 
 ### Person Following
 
+For this exercise, we were tasked with detecting a human in the forward field of vision of the Neato and following them. The goal was to keep the person directly ahead of the Neato, and the Neato a given distance behind. The way we decided to implement this is relatively simple, relying only on the LiDAR data to detect and follow the person. With each scan, we detect groups of LiDAR points within a certain distance of the Neato (assumed to be legs), calculate a rough center point for each leg, and then find an average point between those, determining the "center" of the person to aim for. From there, the logic is very similar to the wall follower logic, steering toward a targeted angle and distance.
+
+#### Code Structure
+
+The `handle_scan()` method goes through each scan, looking for points in the forward-facing range, with a distance of less than 2 meters. Once a point is found, it makes a list of subsequent points of a similar distance, assumed to be more data on the same leg. By taking an average of the angles and distances of these points, a rough center of the leg can be determined using `calc_CoM()`. Although a more complex method could have been used, this seemed to work reasonably well. After detecting some number of legs, a centroid is calculated using the `calc_centroid()` method, determining the target to drive toward.
+
+The `run_loop()` method first takes the distance to the centroid and determines whether the robot is too close to or too far from the person. If too close, linear velocity is set to zero, and if too far, the robot drives forward. Next, it checks whether the its heading aligned with the direction of the person. Based on this, the robot turns left or right to re-align (or doesn't, if already aligned).
+
+#### Issues
+
+Although the following seems to work okay, especially given the rudimentary algorithm I have implemented, it the Neato does seem to get confused sometimes. This is likely because I did not implement any filtering to keep it from detecting walls in addition to people. This would explain why the simulated Neato seems to follow a moving cylinder in an empty world, but the real Neato seems to follow me until it gives up and starts driving in circles.
+
 ### Obstacle Avoidance
 
 We divided the LiDAR data into two groups: a slice of LiDAR data directly ahead of the robot, and periphery LiDAR data of the sides of the robot. These two groups were each broken into left and right, creating a total of four sets of LiDAR data. The function with the role of processing the data intakes a full 360 degree scan and discards unneeded data before it splits it into these four lists. Before feeding the four lists into the movement decision-making function, it checks if there is anything directly ahead of the robot (in which case the robot enters the function for turning the robot until the forward bearing is clear).
