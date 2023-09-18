@@ -62,3 +62,7 @@ These functions run in a constantly updating loop.
 ### Multi-Behaviour
 
 ## Takeaways:
+
+ - Visualizations and concept maps are essential to robotics programming. This can be done through print statements, pseudocode and state diagrams, rviz, Gazebo. A simple mistake in your thinking will be much easier to see live than in lines of code.
+
+ - Sometimes simpler is better. For obstacle avoidance, we could have used RANSAC or other line fitting algorithms and created potential maps - it turns out a simpler algorthim worked just as well and took much less time to implement and troubleshoot.
