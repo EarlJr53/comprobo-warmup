@@ -40,20 +40,31 @@ As a workaround, we allowed any keys other than `WASD` to stop the robot, rather
 
 ### Drive Square
 
+For DriveSquare, we were tasked with making the Neato drive in the shape of a square. One option to make this happen was using the odometry from the robot's encoders to estimate how far it has moved and what angle it is turned to. Instead, we decided to just use timers. In our implementation, the robot drives forward for a given time period, turns left for a given time period, and repeats 3 more times until it has drawn a square.
+
+#### Code Structure
+
+Similarly to the Teleop section, we included a `drive()` method that takes an angular and a linear velocity and sends a movement command to the Neato. In addition, we wrote a pair of methods that each call `drive()`. `turn_left()` commands the Neato to start spinning to the left, then waits a time equivalent to 0.5pi over the angular velocity before bringing the Neato to a stop. This roughly equates to 90 degrees of turn. Similarly, the method `drive_forward()` takes a distance to drive forward, begins driving at a speed, waits for a time equal to the distance over the velocity, and then brings the Neato to a halt. This solution allows the Neato to drive forward roughly the given distance.
+
+FInally, there is a `run_loop()` method that runs a loop 4 times and calls both `drive_forward()` and `turn_left()` with each loop.
+
+#### Issues
+
+We didn't have any major issues with this exercise, although the the delay-based strategy for getting the robot to turn 90 degrees seemed to have some accuracy issues, especially when we moved from the simulator to the physical Neato.
+
 ### Wall Following
 
 ### Person Following
 
 ### Obstacle Avoidance
-Our obstacle avoidance code uses the Neato’s built-in LiDAR and a simple program to avoid obstacles. Our code is split into three main functions: processing the LiDAR scan data, making a decision as to how to move based on that data, and a function that turns the robot if the path ahead is blocked off. The ObstacleAvoidance node has a subscription to the Neato’s LiDAR scan node and a publisher to the Neato’s velocity control node.
 
-We divided the LiDAR data into two groups: a slice of LiDAR data directly ahead of the robot, and periphery LiDAR data of the sides of the robot. These two groups were each broken into left and right, creating a total of four sets of LiDAR data. The function with the role of processing the data intakes a full 360 degree scan and discards unneeded data before it splits it into these four lists. Before feeding the four lists into the movement decision-making function, it checks if there is anything directly ahead of the robot (in which case the robot enters the function for turning the robot until the forward bearing is clear).
-The Neato chooses a path forward by choosing an angular velocity about the center of the Neato and a linear forward velocity. The angular velocity is determined by the minimum values of the periphery scan. If either periphery scan list has an obstacle within 0.7 meters, the angular velocity given a non-zero value that is proportional to the distance from the obstacle. The closer an obstacle is, the higher the angular velocity is. The direction to turn is determined by which side a closer obstacle is detected on. The linear velocity is determined by how close an object is detected in the datasets for directly ahead of the robot. If there is no obstacle within 0.5 meters, the Neato drives forward at 0.2 meters per second. If There is an obstacle closer than that, the Neato adjusts its speed based on how close the obstacle is, such that it slows down the closer it gets to an obstacle.
+Our obstacle avoidance code uses the Neato's built-in LiDAR and a simple program to avoid obstacles. Our code is split into three main functions: processing the LiDAR scan data, making a decision as to how to move based on that data, and a function that turns the robot if the path ahead is blocked off. The ObstacleAvoidance node has a subscription to the Neato's LiDAR scan node and a publisher to the Neato's velocity control node.
+
+We divided the LiDAR data into two groups: a slice of LiDAR data directly ahead of the robot, and periphery LiDAR data of the sides of the robot. These two groups were each broken into left and right, creating a total of four sets of LiDAR data. The function with the role of processing the data intakes a full 360 degree scan and discards unneeded data before it splits it into these four lists. Before feeding the four lists into the movement decision-making function, it checks if there is anything directly ahead of the robot (in which case the robot enters the function for turning the robot until the forward bearing is clear). The Neato chooses a path forward by choosing an angular velocity about the center of the Neato and a linear forward velocity. The angular velocity is determined by the minimum values of the periphery scan. If either periphery scan list has an obstacle within 0.7 meters, the angular velocity given a non-zero value that is proportional to the distance from the obstacle. The closer an obstacle is, the higher the angular velocity is. The direction to turn is determined by which side a closer obstacle is detected on. The linear velocity is determined by how close an object is detected in the datasets for directly ahead of the robot. If there is no obstacle within 0.5 meters, the Neato drives forward at 0.2 meters per second. If There is an obstacle closer than that, the Neato adjusts its speed based on how close the obstacle is, such that it slows down the closer it gets to an obstacle.
 
 If the Neato gets too close to an obstacle directly ahead or next to it, the previous angular and linear velocities are overridden and the Neato stops moving before entering the function that causes it to back up and turn. The turning function uses periphery data to decide which direction to turn in: it will turn away from the side with the closer obstacles.
 
 These functions run in a constantly updating loop.
-
 
 ### Multi-Behaviour
 
