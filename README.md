@@ -42,7 +42,7 @@ As a workaround, we allowed any keys other than `WASD` to stop the robot, rather
 
 For DriveSquare, we were tasked with making the Neato drive in the shape of a square. One option to make this happen was using the odometry from the robot's encoders to estimate how far it has moved and what angle it is turned to. Instead, we decided to just use timers. In our implementation, the robot drives forward for a given time period, turns left for a given time period, and repeats 3 more times until it has drawn a square.
 
-![A demo of the Drive Square functionality (3x speed)](images/drive_square.gif){fig-alt="A GIF of a robotic vacuum cleaner driving in a square." fig-align="left"}
+![A GIF of a robotic vacuum cleaner driving in a square.](images/drive_square.gif "A demo of the Drive Square functionality (3x speed)")
 
 #### Code Structure
 
@@ -58,7 +58,7 @@ We didn't have any major issues with this exercise, although the the delay-based
 
 There were two primary components to the control goals of the wall following exercise. First, we wanted the robot to remain oriented parallel to the wall. Second, we wanted the robot to remain a prescribed distance away from the wall. For this exercise, we used the Neato's LiDAR scan data to keep track of its position and orientation relative to the wall. With each set of LiDAR scan data, we determined which data point held the shortest distance measurement. This told us where the robot was facing relative to the wall, as the shortest distance from the robot to the wall would make up a line perpendicular to the wall, telling us how many degrees the Neato is from parallel to the wall. We could also use this same shortest distance measurement to determine whether we were near our target distance or needed to move closer or further from the wall.
 
-![A demo of the wall-following mission (3x speed)](images/wall_follower.gif){fig-alt="A GIF of a robotic vacuum following a wall at a set distance."}
+![GIF of a robotic vacuum following a wall at a set distance.](images/wall_follower.gif "A demo of the wall-following mission (3x speed)")
 
 #### Code Structure
 
@@ -98,7 +98,7 @@ If the Neato gets too close to an obstacle directly ahead or next to it, the pre
 
 These functions run in a constantly updating loop.
 
-![Demo of obstacle avoidance mission (3x speed)](images/obstacle_avoidance.gif){fig-alt="A GIF of a robot vacuum simulator driving and avoiding obstacles."}
+![A GIF of a robot vacuum simulator driving and avoiding obstacles.](images/obstacle_avoidance.gif "Demo of obstacle avoidance mission (3x speed)")
 
 ### Multi-Behaviour
 
