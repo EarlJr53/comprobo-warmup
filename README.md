@@ -101,7 +101,7 @@ If the Neato gets too close to an obstacle directly ahead or next to it, the pre
 
 These functions run in a constantly updating loop.
 
-![Demo of obstacle avoidance mission (3x speed)](images/obstacle_avoidance.gif){fig-alt="A GIF of a ROS2 bag recording of a robot vacuum driving through a room and avoiding obstacles."}
+![Demo of obstacle avoidance mission recorded in a ROS2 bag (3x speed)](images/obstacle_avoidance.gif)
 
 #### Issues
 The code worked well in the simulator, and then wouldn't work on the physical Neato. The Neato kept seeing invisible walls and shying backwards. After a bit of troubleshooting, we figured out that this was due to the physical Neato and the simulator handling LiDAR data differently - in the simulator, if nothing is detected within range of the LiDAR the range value is returned as infinity, whereas on the physical Neato it is returned as 0.0. We fixed this by removing all 0.0s from the LiDAR data sets before using them for movement decision-making.
