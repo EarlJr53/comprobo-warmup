@@ -64,6 +64,8 @@ There were two primary components to the control goals of the wall following exe
 
 After the `handle_scan()` method processes the incoming scan and determines the shortest measurement, most of the logic for this exercise happens in the `run_loop()` method. First, we calculate the difference between the angle of the shortest measurement and what this angle would be if we were parallel to the wall, giving an angle representing the divergence from a parallel path.
 
+![Diagram of the logic of a wall-following robot](images/wall_follower_diagram.jpg "A diagram of the logic involved in the wall-follower.")
+
 Next, we check whether we are too far, too close, or the right distance from the wall. If we are too close, we turn the Neato away from the wall. If too far, we turn the Neato toward the wall. If we are around the right distance, we turn the Neato back to parallel. Because the Neato's linear velocity is constant in this implementation, all we have to adjust is the angular velocity to get it to reliably follow the wall.
 
 #### Issues
@@ -75,6 +77,8 @@ If we wanted to expand this further, we could add a bump sensor-based stop, allo
 ### Person Following
 
 For this exercise, we were tasked with detecting a human in the forward field of vision of the Neato and following them. The goal was to keep the person directly ahead of the Neato, and the Neato a given distance behind. The way we decided to implement this is relatively simple, relying only on the LiDAR data to detect and follow the person. With each scan, we detect groups of LiDAR points within a certain distance of the Neato (assumed to be legs), calculate a rough center point for each leg, and then find an average point between those, determining the "center" of the person to aim for. From there, the logic is very similar to the wall follower logic, steering toward a targeted angle and distance.
+
+![Diagram of the logic of a person-following robot](images/person_follower_diagram.jpg "A diagram of the logic involved in the person-follower.")
 
 #### Code Structure
 
@@ -90,7 +94,7 @@ Although the following seems to work okay, especially given the rudimentary algo
 
 We divided the LiDAR data into two groups: a slice of LiDAR data directly ahead of the robot, and periphery LiDAR data of the sides of the robot. These two groups were each broken into left and right, creating a total of four sets of LiDAR data. The function with the role of processing the data intakes a full 360 degree scan and discards unneeded data before it splits it into these four lists. Before feeding the four lists into the movement decision-making function, it checks if there is anything directly ahead of the robot (in which case the robot enters the function for turning the robot until the forward bearing is clear).
 
-![IMG_4537](https://github.com/EarlJr53/comprobo-warmup/assets/71215396/aa7ff797-8259-4a70-b9db-1925f19154a1){width="600"}
+![IMG_4537](https://github.com/EarlJr53/comprobo-warmup/assets/71215396/aa7ff797-8259-4a70-b9db-1925f19154a1)
 
 The Neato chooses a path forward by choosing an angular velocity about the center of the Neato and a linear forward velocity. The angular velocity is determined by the minimum values of the periphery scan. If either periphery scan list has an obstacle within 0.7 meters, the angular velocity given a non-zero value that is proportional to the distance from the obstacle. The closer an obstacle is, the higher the angular velocity is. The direction to turn is determined by which side a closer obstacle is detected on. The linear velocity is determined by how close an object is detected in the datasets for directly ahead of the robot. If there is no obstacle within 0.5 meters, the Neato drives forward at 0.2 meters per second. If There is an obstacle closer than that, the Neato adjusts its speed based on how close the obstacle is, such that it slows down the closer it gets to an obstacle.
 
