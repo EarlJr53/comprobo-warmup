@@ -1,6 +1,6 @@
 # CompRobo FA2023: Warmup Project
 
-Brooke Moss, Lauren Thorbecke, Swasti Jain
+*Brooke Moss, Lauren Thorbecke, Swasti Jain*
 
 ## Project Description
 
@@ -18,7 +18,7 @@ The tasks are as follows:
 
 - Obstacle Avoidance: Have the Neato drive through a room autonomously while detecting and avoiding obstacles.
 
-- Multi-Behaviour:
+- Multi-Behaviour: *In Progress*
 
 ## Implementation
 
