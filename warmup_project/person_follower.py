@@ -6,6 +6,10 @@ from sensor_msgs.msg import LaserScan
 
 
 class PersonFollowerNode(Node):
+    """
+    Node that detects and follows a person at a set distance
+    """
+
     def __init__(self):
         super().__init__("person_follower_node")
         self.create_timer(0.1, self.run_loop)
@@ -16,14 +20,21 @@ class PersonFollowerNode(Node):
             self.handle_scan,
             qos_profile=qos_profile_sensor_data,
         )
-        self.feet_ang = []
-        self.feet_dist = []
-        self.centroid_ang = 0.0
-        self.centroid_dist = 0.0
+        self.feet_ang = []  # set of angles for feet CoMs
+        self.feet_dist = []  # set of distances for feet CoMs
+        self.centroid_ang = 0.0  # angle to centroid of person
+        self.centroid_dist = 0.0  # distance to centroid of person
         self.target_distance = 1.0
         self.distance_deadband = 0.15
 
     def handle_scan(self, scan):
+        """
+        Parses LiDAR scan and detects legs.
+        If person detected, calculates center point to aim for.
+
+        Args:
+            scan: LiDAR scan object
+        """
         if scan.ranges[0] != 0.0:
             temp_angles = []
             temp_dist = []
@@ -45,6 +56,9 @@ class PersonFollowerNode(Node):
                 self.centroid_dist = 0.0
 
     def run_loop(self):
+        """
+        Determine whether robot is too far or close to person and adjust angle.
+        """
         msg = Twist()
 
         ang_dif = self.centroid_ang - 180
@@ -75,28 +89,28 @@ class PersonFollowerNode(Node):
         self.vel_pub.publish(msg)
 
     def calc_CoM(self, angles, dists):
+        """
+        Calculate average position of one set of LiDAR points (one leg)
+
+        Args:
+            angles (double[]): List of LiDAR angles for leg
+            dists (double[]): List of LiDAR distances for leg
+        """
         self.feet_dist.append(sum(dists) / len(dists))
         self.feet_ang.append(sum(angles) / len(angles))
 
     def calc_centroid(self):
-        # if 90 < (sum(self.feet_ang) / len(self.feet_ang)) < 270:
+        """
+        Calculate centroid between legs
+        """
         self.centroid_ang = sum(self.feet_ang) / len(self.feet_ang)
         self.centroid_dist = sum(self.feet_dist) / len(self.feet_dist)
 
 
-# class FootObject():
-#     def __init__(self, angles, dists):
-#         self.dist = sum(dists) / len(dists)
-#         self.ang = sum(angles) / len(angles)
-
-#     def getAng(self):
-#         return self.ang
-
-#     def getDist(self):
-#         return self.dist
-
-
 def main(args=None):
+    """
+    Create a PersonFollower Node
+    """
     rclpy.init(args=args)
     node = PersonFollowerNode()
     rclpy.spin(node)

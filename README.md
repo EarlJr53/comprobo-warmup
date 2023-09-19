@@ -2,7 +2,7 @@
 
 Brooke Moss, Lauren Thorbecke, Swasti Jain
 
-## Project Description:
+## Project Description
 
 As the warm-up project for A Computational Introduction to Robotics ("CompRobo") Fall 2023, we were tasked to use ROS2 tools to allow our Neato robotic vacuum to perform a number of tasks of increasing complexity.
 
@@ -20,7 +20,7 @@ The tasks are as follows:
 
 - Multi-Behaviour:
 
-## Implementation:
+## Implementation
 
 ### Teleop
 
@@ -40,7 +40,7 @@ As a workaround, we allowed any keys other than `WASD` to stop the robot, rather
 
 ### Drive Square
 
-For DriveSquare, we were tasked with making the Neato drive in the shape of a square. One option to make this happen was using the odometry from the robot's encoders to estimate how far it has moved and what angle it is turned to. Instead, we decided to just use timers. In our implementation, the robot drives forward for a given time period, turns left for a given time period, and repeats 3 more times until it has drawn a square.
+For Drive Square, we were tasked with making the Neato drive in the shape of a square. One option to make this happen was using the odometry from the robot's encoders to estimate how far it has moved and what angle it is turned to. Instead, we decided to just use timers. In our implementation, the robot drives forward for a given time period, turns left for a given time period, and repeats 3 more times until it has drawn a square.
 
 ![A GIF of a robotic vacuum cleaner driving in a square.](images/drive_square.gif "A demo of the Drive Square functionality (3x speed)")
 
@@ -114,8 +114,12 @@ The code worked well in the simulator, and then wouldn't work on the physical Ne
 
 ### Multi-Behaviour
 
-## Takeaways:
+This section of the project is still ongoing.
+
+## Takeaways
 
 - Visualizations and concept maps are essential to robotics programming. This can be done through print statements, pseudocode and state diagrams, rviz, Gazebo. A simple mistake in your thinking will be much easier to see live than in lines of code.
 
 - Sometimes simpler is better. For obstacle avoidance, we could have used RANSAC or other line fitting algorithms and created potential maps - it turns out a simpler algorthim worked just as well and took much less time to implement and troubleshoot.
+
+- If we had more time to work on this project, I would have liked to integrate more robust algorithms. For instance, being able to detect and ignore walls in the person-follower. Some additional features could also involve the bump sensor or allowing the user to define certain target distances on the fly.
