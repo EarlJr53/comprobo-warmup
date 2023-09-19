@@ -8,17 +8,17 @@ As the warm-up project for A Computational Introduction to Robotics ("CompRobo")
 
 The tasks are as follows:
 
--   Teleop: Control the Neato using keystrokes on a laptop. Using `WASD` keys, control the robot's forward/backward motion and turning.
+- Teleop: Control the Neato using keystrokes on a laptop. Using `WASD` keys, control the robot's forward/backward motion and turning.
 
--   Driving in a Square: Write a simple ROS node where the robot drives forward a set distance, turns 90 degrees, and repeats until it has drawn a square.
+- Driving in a Square: Write a simple ROS node where the robot drives forward a set distance, turns 90 degrees, and repeats until it has drawn a square.
 
--   Wall Following: Have the Neato autonomously drive parallel to a wall, at a set distance from the wall.
+- Wall Following: Have the Neato autonomously drive parallel to a wall, at a set distance from the wall.
 
--   Person Following: Have the Neato detect and follow a person walking in front of it, staying a set distance behind.
+- Person Following: Have the Neato detect and follow a person walking in front of it, staying a set distance behind.
 
--   Obstacle Avoidance: Have the Neato drive through a room autonomously while detecting and avoiding obstacles.
+- Obstacle Avoidance: Have the Neato drive through a room autonomously while detecting and avoiding obstacles.
 
--   Multi-Behaviour:
+- Multi-Behaviour:
 
 ## Implementation:
 
@@ -97,6 +97,7 @@ In obstacle avoidance, we needed to program the Neato to drive through a room an
 ![IMG_4537](https://github.com/EarlJr53/comprobo-warmup/assets/71215396/aa7ff797-8259-4a70-b9db-1925f19154a1)
 
 #### Code Structure
+
 We divided the LiDAR data into two groups: a slice of LiDAR data directly ahead of the robot, and periphery LiDAR data of the sides of the robot. These two groups were each broken into left and right, creating a total of four sets of LiDAR data. A function called `process_scan()` intakes a full 360 degree scan and discards unneeded data before it splits it into these four lists. Before feeding the four lists into the movement decision-making function, it checks if there is anything directly ahead of the robot (in which case the robot enters the function `turnUntilClear()` for turning the robot until the forward bearing is clear).
 
 The Neato chooses a path forward in the `choose_path()` function by choosing an angular velocity about the center of the Neato and a linear velocity. The angular velocity is determined by the minimum values of the periphery scan, which represent the closest obstacles. If either periphery scan list has an obstacle within 0.7 meters, the angular velocity is assigned a non-zero value that is proportional to the distance from the obstacle. The closer an obstacle is, the higher the angular velocity is. The direction to turn is determined by which side has an obstacle closer by. The linear velocity is determined by how close an object is detected in the dataset for directly ahead of the robot. If there is no obstacle within 0.5 meters, the Neato drives forward at 0.2 meters per second. If there is an obstacle closer than that, the Neato adjusts its speed based on how close the obstacle is, such that it slows down the closer it gets to an obstacle.
@@ -108,12 +109,13 @@ These functions run in a constantly updating loop.
 ![Demo of obstacle avoidance mission recorded in a ROS2 bag (3x speed)](images/obstacle_avoidance.gif)
 
 #### Issues
+
 The code worked well in the simulator, and then wouldn't work on the physical Neato. The Neato kept seeing invisible walls and shying backwards. After a bit of troubleshooting, we figured out that this was due to the physical Neato and the simulator handling LiDAR data differently - in the simulator, if nothing is detected within range of the LiDAR the range value is returned as infinity, whereas on the physical Neato it is returned as 0.0. We fixed this by removing all 0.0s from the LiDAR data sets before using them for movement decision-making.
 
 ### Multi-Behaviour
 
 ## Takeaways:
 
--   Visualizations and concept maps are essential to robotics programming. This can be done through print statements, pseudocode and state diagrams, rviz, Gazebo. A simple mistake in your thinking will be much easier to see live than in lines of code.
+- Visualizations and concept maps are essential to robotics programming. This can be done through print statements, pseudocode and state diagrams, rviz, Gazebo. A simple mistake in your thinking will be much easier to see live than in lines of code.
 
--   Sometimes simpler is better. For obstacle avoidance, we could have used RANSAC or other line fitting algorithms and created potential maps - it turns out a simpler algorthim worked just as well and took much less time to implement and troubleshoot.
+- Sometimes simpler is better. For obstacle avoidance, we could have used RANSAC or other line fitting algorithms and created potential maps - it turns out a simpler algorthim worked just as well and took much less time to implement and troubleshoot.
