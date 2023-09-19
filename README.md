@@ -16,7 +16,7 @@ The tasks are as follows:
 
 -   Person Following: Have the Neato detect and follow a person walking in front of it, staying a set distance behind.
 
--   Obstacle Avoidance:
+-   Obstacle Avoidance: Have the Neato drive through a room autonomously while detecting and avoiding obstacles.
 
 -   Multi-Behaviour:
 
@@ -92,17 +92,23 @@ Although the following seems to work okay, especially given the rudimentary algo
 
 ### Obstacle Avoidance
 
-We divided the LiDAR data into two groups: a slice of LiDAR data directly ahead of the robot, and periphery LiDAR data of the sides of the robot. These two groups were each broken into left and right, creating a total of four sets of LiDAR data. The function with the role of processing the data intakes a full 360 degree scan and discards unneeded data before it splits it into these four lists. Before feeding the four lists into the movement decision-making function, it checks if there is anything directly ahead of the robot (in which case the robot enters the function for turning the robot until the forward bearing is clear).
+In obstacle avoidance, we needed to program the Neato to drive through a room and avoid any obstacles autonomously. Our obstacle avoidance code uses the Neato’s built-in LiDAR and a simple program to avoid obstacles. Our code is split into three main functions: processing the LiDAR scan data, making a decision as to how to move based on that data, and a function that turns the robot if the path ahead is blocked off. Decisions for movement are made based on whether the path ahead is blocked off (in which case the robot backs up and turns) and whether an obstacle is in the robot's periphery and needs to be avoided (in which case the robot swerves away from it). The ObstacleAvoidance node has a subscription to the Neato’s LiDAR scan node and a publisher to the Neato’s velocity control node.
 
 ![IMG_4537](https://github.com/EarlJr53/comprobo-warmup/assets/71215396/aa7ff797-8259-4a70-b9db-1925f19154a1)
 
-The Neato chooses a path forward by choosing an angular velocity about the center of the Neato and a linear forward velocity. The angular velocity is determined by the minimum values of the periphery scan. If either periphery scan list has an obstacle within 0.7 meters, the angular velocity given a non-zero value that is proportional to the distance from the obstacle. The closer an obstacle is, the higher the angular velocity is. The direction to turn is determined by which side a closer obstacle is detected on. The linear velocity is determined by how close an object is detected in the datasets for directly ahead of the robot. If there is no obstacle within 0.5 meters, the Neato drives forward at 0.2 meters per second. If There is an obstacle closer than that, the Neato adjusts its speed based on how close the obstacle is, such that it slows down the closer it gets to an obstacle.
+#### Code Structure
+We divided the LiDAR data into two groups: a slice of LiDAR data directly ahead of the robot, and periphery LiDAR data of the sides of the robot. These two groups were each broken into left and right, creating a total of four sets of LiDAR data. A function called `process_scan()` intakes a full 360 degree scan and discards unneeded data before it splits it into these four lists. Before feeding the four lists into the movement decision-making function, it checks if there is anything directly ahead of the robot (in which case the robot enters the function `turnUntilClear()` for turning the robot until the forward bearing is clear).
 
-If the Neato gets too close to an obstacle directly ahead or next to it, the previous angular and linear velocities are overridden and the Neato stops moving before entering the function that causes it to back up and turn. The turning function uses periphery data to decide which direction to turn in: it will turn away from the side with the closer obstacles.
+The Neato chooses a path forward in the `choose_path()` function by choosing an angular velocity about the center of the Neato and a linear velocity. The angular velocity is determined by the minimum values of the periphery scan, which represent the closest obstacles. If either periphery scan list has an obstacle within 0.7 meters, the angular velocity is assigned a non-zero value that is proportional to the distance from the obstacle. The closer an obstacle is, the higher the angular velocity is. The direction to turn is determined by which side has an obstacle closer by. The linear velocity is determined by how close an object is detected in the dataset for directly ahead of the robot. If there is no obstacle within 0.5 meters, the Neato drives forward at 0.2 meters per second. If there is an obstacle closer than that, the Neato adjusts its speed based on how close the obstacle is, such that it slows down the closer it gets to an obstacle.
+
+If the Neato gets too close to an obstacle directly ahead or next to it, the previous angular and linear velocities are overridden and the Neato stops moving before entering the `turnUntilClear()` function, which causes it to back up and turn. The function uses periphery data to decide which direction to turn in: it will turn away from the side with the closer obstacles.
 
 These functions run in a constantly updating loop.
 
-![A GIF of a robot vacuum simulator driving and avoiding obstacles.](images/obstacle_avoidance.gif "Demo of obstacle avoidance mission (3x speed)")
+![Demo of obstacle avoidance mission recorded in a ROS2 bag (3x speed)](images/obstacle_avoidance.gif)
+
+#### Issues
+The code worked well in the simulator, and then wouldn't work on the physical Neato. The Neato kept seeing invisible walls and shying backwards. After a bit of troubleshooting, we figured out that this was due to the physical Neato and the simulator handling LiDAR data differently - in the simulator, if nothing is detected within range of the LiDAR the range value is returned as infinity, whereas on the physical Neato it is returned as 0.0. We fixed this by removing all 0.0s from the LiDAR data sets before using them for movement decision-making.
 
 ### Multi-Behaviour
 
