@@ -16,7 +16,7 @@ The tasks are as follows:
 
 -   Person Following: Have the Neato detect and follow a person walking in front of it, staying a set distance behind.
 
--   Obstacle Avoidance:
+-   Obstacle Avoidance: Have the Neato drive through a room autonomously while detecting and avoiding obstacles.
 
 -   Multi-Behaviour:
 
